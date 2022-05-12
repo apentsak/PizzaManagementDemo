@@ -1,0 +1,49 @@
+version: '3.7'
+services:
+  app-be:
+    container_name: filtersexample-be
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8000:80
+    volumes:
+      - ./be-src:/application
+      - ./config/backend/entrypoint.local.sh:/entrypoint/entrypoint.sh
+      - ./config/backend/php/php.ini:/usr/local/etc/php/conf.d/php.ini
+      - ./config/backend/php/xdebug/xdebug-linux.ini:/usr/local/etc/php/conf.d/xdebug.ini
+      - ./config/backend/apache2/000-default.conf:/etc/apache2/sites-available/000-default.conf
+    depends_on:
+      - database
+    entrypoint:
+      - sh
+      - /entrypoint/entrypoint.sh
+  app-fe:
+    container_name: filtersexample-fe
+    build:
+      context: .
+      dockerfile: fe.Dockerfile
+    ports:
+      - 9000:8080
+    volumes:
+      - ./fe-src:/application
+      - ./config/frontend/entrypoint.local.sh:/entrypoint/entrypoint.sh
+    entrypoint:
+        - sh
+        - /entrypoint/entrypoint.sh
+  
+  database:
+    container_name: filtersexampledb
+    image: mysql:8
+    environment:
+      - MYSQL_PASSWORD=password
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=filtersexample
+      - MYSQL_USER=dbuser
+    ports:
+      - "33306:3306"
+    volumes:
+      - filtersexample-volume:/var/lib/mysql
+
+volumes:
+  filtersexample-volume:
